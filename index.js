@@ -5,6 +5,7 @@ const path = require('node:path');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v10');
 const sqlite3 = require('sqlite3').verbose();
+const config = require('./config.json');
 
 // Set up the commands array and read command files
 if (!process.env.DISCORD_TOKEN || !process.env.CLIENT_ID || !process.env.GUILD_ID) {
@@ -49,6 +50,22 @@ const client = new Client({
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
   ],
+});
+
+// On error
+client.on('interactionCreate', async interaction => {
+  if (!interaction.isCommand()) return;
+  try {
+    const command = require(`./commands/${interaction.commandName}.js`);
+    await command.execute(interaction, userdb);
+  } catch (error) {
+    console.error(error);
+    if (interaction.replied || interaction.deferred) {
+      await interaction.followUp({ content: 'There was an error executing this command!', ephemeral: true });
+    } else {
+      await interaction.reply({ content: 'There was an error executing this command!', ephemeral: true });
+    }
+  }
 });
 
 // Setup User DataBase Using SQLite
@@ -96,5 +113,20 @@ const itemsdb = new sqlite3.Database('./items.db', (err) => {
   }
 });
 
+
+// On user join server, add them to the database
+client.on('guildMemberAdd', member => {
+  userdb.run(
+    `INSERT OR IGNORE INTO users (id, balance) VALUES (?, ?)`,[member.id, config.defaultBalance],
+    (err) => {
+      if (err) {
+        console.error('Error adding user to database', err);
+      }
+    }
+  );
+});
+
+// Export db
+module.exports = { userdb, itemsdb };
 // Log in to Discord with the bot token
 client.login(process.env.DISCORD_TOKEN);
