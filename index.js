@@ -21,7 +21,7 @@ for (const file of commandFiles) {
 }
 
 // Create a new REST instance and set the token
-const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
+const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 
 // Register the commands with Discord's API
 (async () => {
