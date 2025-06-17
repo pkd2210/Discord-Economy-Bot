@@ -126,6 +126,24 @@ client.on('guildMemberAdd', member => {
   );
 });
 
+// add everyone in the guild to the database
+client.on('guildCreate', guild => {
+  guild.members.fetch().then(members => {
+    members.forEach(member => {
+      userdb.run(
+        `INSERT OR IGNORE INTO users (id, balance) VALUES (?, ?)`, [member.id, config.defaultBalance],
+        (err) => {
+          if (err) {
+            console.error('Error adding user to database', err);
+          }
+        }
+      );
+    });
+  }).catch(err => {
+    console.error('Error fetching members', err);
+  });
+});
+
 // Export db
 module.exports = { userdb, itemsdb };
 // Log in to Discord with the bot token

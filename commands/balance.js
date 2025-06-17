@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const config = require('../config.json');
 
+//command setup
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('balance')
@@ -10,6 +11,7 @@ module.exports = {
         .setDescription('The user to check the balance for')
         .setRequired(false)
     ),
+  // command execution
   async execute(interaction, userdb) {
     const user = interaction.options.getUser('user') || interaction.user;
     userdb.get('SELECT balance FROM users WHERE id = ?', [user.id], async (err, row) => {
