@@ -49,3 +49,6 @@ const client = new Client({
     GatewayIntentBits.MessageContent,
   ],
 });
+
+// Log in to Discord with the bot token
+client.login(process.env.DISCORD_TOKEN);
