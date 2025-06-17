@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v10');
+const sqlite3 = require('sqlite3').verbose();
 
 // Set up the commands array and read command files
 if (!process.env.DISCORD_TOKEN || !process.env.CLIENT_ID || !process.env.GUILD_ID) {
@@ -48,6 +49,51 @@ const client = new Client({
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
   ],
+});
+
+// Setup User DataBase Using SQLite
+const userdb = new sqlite3.Database('./users.db', (err) => {
+  if (err) {
+    console.error('Could not connect to database', err);
+  } else {
+    console.log('Connected to SQLite database');
+    // Create users table if it doesn't exist
+    userdb.run(`CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      balance INTEGER DEFAULT 0
+    )`, (err) => {
+      if (err) {
+        console.error('Could not create users table', err);
+      } else {
+        console.log('Users table ready');
+      }
+    });
+  }
+});
+
+// Setup User DataBase Using SQLite
+const itemsdb = new sqlite3.Database('./items.db', (err) => {
+  if (err) {
+    console.error('Could not connect to database', err);
+  } else {
+    console.log('Connected to SQLite database');
+    // Create items table if it doesn't exist
+    userdb.run(`CREATE TABLE IF NOT EXISTS items (
+      id TEXT PRIMARY KEY,
+      category TEXT DEFAULT 'general'
+      name TEXT NOT NULL,
+      description TEXT,
+      price INTEGER DEFAULT 0,
+      stock INTEGER DEFAULT 0,
+      image_url TEXT
+    )`, (err) => {
+      if (err) {
+        console.error('Could not create users table', err);
+      } else {
+        console.log('Users table ready');
+      }
+    });
+  }
 });
 
 // Log in to Discord with the bot token
