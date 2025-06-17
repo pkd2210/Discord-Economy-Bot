@@ -80,7 +80,7 @@ const itemsdb = new sqlite3.Database('./items.db', (err) => {
     // Create items table if it doesn't exist
     userdb.run(`CREATE TABLE IF NOT EXISTS items (
       id TEXT PRIMARY KEY,
-      category TEXT DEFAULT 'general'
+      category TEXT DEFAULT 'general',
       name TEXT NOT NULL,
       description TEXT,
       price INTEGER DEFAULT 0,
@@ -88,9 +88,9 @@ const itemsdb = new sqlite3.Database('./items.db', (err) => {
       image_url TEXT
     )`, (err) => {
       if (err) {
-        console.error('Could not create users table', err);
+        console.error('Could not create items table', err);
       } else {
-        console.log('Users table ready');
+        console.log('Items table ready');
       }
     });
   }
