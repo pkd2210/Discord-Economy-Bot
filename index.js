@@ -175,9 +175,7 @@ client.on('messageCreate', message => {
             const earnedBalance = config.balance_per_message;
             userdb.run('UPDATE users SET balance = balance + ? WHERE id = ?', [earnedBalance, userId], (err) => {
                 if (err) {
-                    console.error('Error updating balance', err);
-                } else {
-                    console.log(`Awarded ${earnedBalance} to ${message.author.username}`);
+                    console.error('Error updating balance for messages', err);
                 }
             });
         }
