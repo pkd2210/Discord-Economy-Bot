@@ -145,6 +145,45 @@ client.on('guildCreate', guild => {
 	});
 });
 
+// Ways to earn balance
+// Award balance to users for sending messages, with cooldown to prevent spam
+const messageCooldown = new Map();
+
+client.on('messageCreate', message => {
+    if (message.author.bot) return; // Ignore bot messages
+
+    const userId = message.author.id;
+    const cooldown = (config.cooldown_secends || 30) * 1000;
+
+    // Cooldown check
+    if (messageCooldown.has(userId)) {
+        const last = messageCooldown.get(userId);
+        if (Date.now() - last < cooldown) return;
+    }
+    messageCooldown.set(userId, Date.now());
+
+    // Check if the user exists in the database, if not, add them
+    userdb.get('SELECT balance FROM users WHERE id = ?', [userId], (err, row) => {
+        if (err) {
+            console.error('Error accessing database', err);
+            return;
+        }
+        if (!row) {
+            userdb.run('INSERT INTO users (id, balance) VALUES (?, ?)', [userId, config.default_balance]);
+        } else {
+            // Award balance for sending a message
+            const earnedBalance = config.balance_per_message;
+            userdb.run('UPDATE users SET balance = balance + ? WHERE id = ?', [earnedBalance, userId], (err) => {
+                if (err) {
+                    console.error('Error updating balance', err);
+                } else {
+                    console.log(`Awarded ${earnedBalance} to ${message.author.username}`);
+                }
+            });
+        }
+    });
+});
+
 // Export db
 module.exports = { userdb, itemsdb };
 // Log in to Discord with the bot token
