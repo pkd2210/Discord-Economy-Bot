@@ -58,8 +58,7 @@ client.on('interactionCreate', async interaction => {
 	if (!interaction.isCommand()) return;
 	try {
 		const command = require(`./commands/${interaction.commandName}.js`);
-		await command.execute(interaction, itemsdb);
-		await command.execute(interaction, userdb);
+		await command.execute(interaction, itemsdb, userdb);
 	} catch (error) {
 		console.error(error);
 		if (interaction.replied || interaction.deferred) {

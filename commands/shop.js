@@ -14,7 +14,6 @@ module.exports = {
 				.setColor(0x008080)
 				.setTitle(`Items Shop`)
 				.setDescription('ID: Name - description - price (stock)')
-				.setFooter({ text: `Command executed by ${interaction.user.tag}` });
 
 			const rows = await new Promise((resolve, reject) => {
 				itemsdb.all('SELECT * FROM items ORDER BY price ASC', [], (err, rows) => {
@@ -22,10 +21,9 @@ module.exports = {
 					else resolve(rows);
 				});
 			});
-
-			if (!rows || rows.length === 0) {
-				await interaction.editReply({ content: 'The shop is currently empty.' });
-				return;
+			if (rows.length === 0) {
+				embed.setDescription('No items available in the shop.');
+				return await interaction.editReply({ embeds: [embed] });
 			}
 
 			rows.forEach((row) => {
