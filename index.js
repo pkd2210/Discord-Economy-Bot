@@ -58,6 +58,7 @@ client.on('interactionCreate', async interaction => {
 	if (!interaction.isCommand()) return;
 	try {
 		const command = require(`./commands/${interaction.commandName}.js`);
+		await command.execute(interaction, itemsdb);
 		await command.execute(interaction, userdb);
 	} catch (error) {
 		console.error(error);
@@ -90,7 +91,7 @@ const userdb = new sqlite3.Database('./users.db', (err) => {
 	}
 });
 
-// Setup User DataBase Using SQLite
+// Setup Items DataBase Using SQLite
 const itemsdb = new sqlite3.Database('./items.db', (err) => {
 	if (err) {
 		console.error('Could not connect to database', err);
@@ -99,12 +100,10 @@ const itemsdb = new sqlite3.Database('./items.db', (err) => {
 		// Create items table if it doesn't exist
 		itemsdb.run(`CREATE TABLE IF NOT EXISTS items (
 			id TEXT PRIMARY KEY,
-			category TEXT DEFAULT 'general',
 			name TEXT NOT NULL,
 			description TEXT,
 			price INTEGER DEFAULT 0,
-			stock INTEGER DEFAULT 0,
-			image_url TEXT
+			stock INTEGER DEFAULT 0
 		)`, (err) => {
 			if (err) {
 				console.error('Could not create items table', err);
