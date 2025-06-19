@@ -78,7 +78,8 @@ const userdb = new sqlite3.Database('./users.db', (err) => {
 		// Create users table if it doesn't exist
 		userdb.run(`CREATE TABLE IF NOT EXISTS users (
 			id TEXT PRIMARY KEY,
-			balance INTEGER DEFAULT 0
+			balance INTEGER DEFAULT 0,
+			last_daily INTEGER
 		)`, (err) => {
 			if (err) {
 				console.error('Could not create users table', err);
@@ -153,7 +154,7 @@ client.on('messageCreate', message => {
     if (message.author.bot) return; // Ignore bot messages
 
     const userId = message.author.id;
-    const cooldown = (config.cooldown_secends || 30) * 1000;
+    const cooldown = (config.messages_cooldown_secends || 30) * 1000;
 
     // Cooldown check
     if (messageCooldown.has(userId)) {
