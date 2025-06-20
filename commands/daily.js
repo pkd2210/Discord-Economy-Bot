@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 const config = require('../config.json');
+const sqlite3 = require('sqlite3').verbose();
 
 //command setup
 module.exports = {
@@ -7,7 +8,9 @@ module.exports = {
         .setName('daily')
         .setDescription('Get your daily payout.'),
   // command execution
-    async execute(interaction, userdb) {
+    async execute(interaction) {
+		// import the database
+        const userdb = new sqlite3.Database('./users.db');
 		payout = config.daily_payout;
 		// Check if the daily command is enabled
 		if (config.daily_payout <= 0) {
@@ -34,7 +37,7 @@ module.exports = {
 					const logChannel = interaction.guild.channels.cache.get(config.log_channel_id);
 					if (logChannel) {
 					const logEmbed = new EmbedBuilder()
-						.setColor(0x008080)
+						.setColor(config.embed_color)
 						.setTitle('Balance Added - Daily')
 						.setDescription(`Added ${payout} balance to ${interaction.user.username} By Using /Daily.`)
 						.setThumbnail(interaction.user.displayAvatarURL())
@@ -56,7 +59,7 @@ module.exports = {
 					const logChannel = interaction.guild.channels.cache.get(config.log_channel_id);
 					if (logChannel) {
 					const logEmbed = new EmbedBuilder()
-						.setColor(0x008080)
+						.setColor(config.embed_color)
 						.setTitle('Balance Added - Daily')
 						.setDescription(`Added ${payout} balance to ${interaction.user.username} By Using /Daily.`)
 						.setThumbnail(interaction.user.displayAvatarURL())

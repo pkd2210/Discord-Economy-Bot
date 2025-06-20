@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 const config = require('../config.json');
+const sqlite3 = require('sqlite3').verbose();
 
 //command setup
 module.exports = {
@@ -7,7 +8,9 @@ module.exports = {
 		.setName('leaderboard')
 		.setDescription(`Top ${config.leaderboard_limit} users with the most balance.`),
   // command execution
-	async execute(interaction, userdb) {
+	async execute(interaction) {
+		// import the database
+        const userdb = new sqlite3.Database('./users.db');
 		userdb.all('SELECT id, balance FROM users ORDER BY balance DESC LIMIT ?', [config.leaderboard_limit], (err, rows) => {
 			if (err) {
 				return interaction.reply({ content : 'An error occurred while fetching the leaderboard.', flags: MessageFlags.Ephemeral });
@@ -16,7 +19,7 @@ module.exports = {
 				return interaction.reply({ content: 'No users found in the leaderboard.', flags: MessageFlags.Ephemeral });
 			}
 			const embed = new EmbedBuilder()
-				.setColor(0x008080)
+				.setColor(config.embed_color)
 				.setTitle('Leaderboard')
 				.setDescription(`Top ${config.leaderboard_limit} users with the most balance:`)
 				.setThumbnail(interaction.guild.iconURL())

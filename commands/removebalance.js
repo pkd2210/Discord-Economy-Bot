@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, PermissionsBitField, MessageFlags } = require('discord.js');
 const config = require('../config.json');
+const sqlite3 = require('sqlite3').verbose();
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -17,7 +18,9 @@ module.exports = {
                 .setMinValue(1)
         )
         .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageGuild),
-    async execute(interaction, userdb) {
+    async execute(interaction) {
+		// import the database
+        const userdb = new sqlite3.Database('./users.db');
         const user = interaction.options.getUser('user');
         const amount = interaction.options.getInteger('amount');
 
@@ -39,7 +42,7 @@ module.exports = {
                         const logChannel = interaction.guild.channels.cache.get(config.log_channel_id);
                         if (logChannel) {
                             const logEmbed = new EmbedBuilder()
-                                .setColor(0x008080)
+                                .setColor(config.embed_color)
                                 .setTitle('Balance Removed')
                                 .setDescription(`${amount} balance removed from ${user.tag} by ${interaction.user.tag}.`)
                                 .setTimestamp();

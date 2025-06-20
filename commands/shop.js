@@ -1,4 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
+const config = require('../config.json');
+const sqlite3 = require('sqlite3').verbose();
 
 //command setup
 module.exports = {
@@ -6,12 +8,14 @@ module.exports = {
         .setName('shop')
         .setDescription('Check the shop for items you can buy.'),
   // command execution
-    async execute(interaction, itemsdb) {
+    async execute(interaction) {
+		// import the database
+        const itemsdb = new sqlite3.Database('./items.db');
 		try {
 			await interaction.deferReply();
 
 			const embed = new EmbedBuilder()
-				.setColor(0x008080)
+				.setColor(config.embed_color)
 				.setTitle(`Items Shop`)
 				.setDescription('ID: Name - description - price (stock)')
 

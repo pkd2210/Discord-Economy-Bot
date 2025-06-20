@@ -53,28 +53,13 @@ const client = new Client({
 	],
 });
 
-// On error
-client.on('interactionCreate', async interaction => {
-	if (!interaction.isCommand()) return;
-	try {
-		const command = require(`./commands/${interaction.commandName}.js`);
-		await command.execute(interaction, itemsdb, userdb);
-	} catch (error) {
-		console.error(error);
-		if (interaction.replied || interaction.deferred) {
-			await interaction.followUp({ content: 'There was an error executing this command!', flags: MessageFlags.Ephemeral });
-		} else {
-			await interaction.reply({ content: 'There was an error executing this command!', flags: MessageFlags.Ephemeral });
-		}
-	}
-});
-
 // Setup User DataBase Using SQLite
 const userdb = new sqlite3.Database('./users.db', (err) => {
 	if (err) {
-		console.error('Could not connect to database', err);
+		console.error('Could not connect to users database:', err);
+		process.exit(1); // Exit the process if the database cannot be initialized
 	} else {
-		console.log('Connected to SQLite database');
+		console.log('Connected to SQLite users database');
 		// Create users table if it doesn't exist
 		userdb.run(`CREATE TABLE IF NOT EXISTS users (
 			id TEXT PRIMARY KEY,
@@ -82,7 +67,8 @@ const userdb = new sqlite3.Database('./users.db', (err) => {
 			last_daily INTEGER
 		)`, (err) => {
 			if (err) {
-				console.error('Could not create users table', err);
+				console.error('Could not create users table:', err);
+				process.exit(1); // Exit the process if the table cannot be created
 			} else {
 				console.log('Users table ready');
 			}
@@ -93,9 +79,10 @@ const userdb = new sqlite3.Database('./users.db', (err) => {
 // Setup Items DataBase Using SQLite
 const itemsdb = new sqlite3.Database('./items.db', (err) => {
 	if (err) {
-		console.error('Could not connect to database', err);
+		console.error('Could not connect to items database:', err);
+		process.exit(1); // Exit the process if the database cannot be initialized
 	} else {
-		console.log('Connected to SQLite database');
+		console.log('Connected to SQLite items database');
 		// Create items table if it doesn't exist
 		itemsdb.run(`CREATE TABLE IF NOT EXISTS items (
 			id TEXT PRIMARY KEY,
@@ -105,7 +92,8 @@ const itemsdb = new sqlite3.Database('./items.db', (err) => {
 			stock INTEGER DEFAULT 0
 		)`, (err) => {
 			if (err) {
-				console.error('Could not create items table', err);
+				console.error('Could not create items table:', err);
+				process.exit(1); // Exit the process if the table cannot be created
 			} else {
 				console.log('Items table ready');
 			}
@@ -113,6 +101,10 @@ const itemsdb = new sqlite3.Database('./items.db', (err) => {
 	}
 });
 
+// Add a listener for the 'ready' event to confirm the bot is running
+client.once('ready', () => {
+    console.log(`Logged in as ${client.user.tag}!`);
+});
 
 // On user join server, add them to the database
 client.on('guildMemberAdd', member => {
@@ -181,7 +173,33 @@ client.on('messageCreate', message => {
     });
 });
 
-// Export db
-module.exports = { userdb, itemsdb };
-// Log in to Discord with the bot token
-client.login(process.env.DISCORD_TOKEN);
+// Add a collection to store commands
+const commandsCollection = new Map();
+for (const file of commandFiles) {
+	const command = require(path.join(commandsPath, file));
+	commandsCollection.set(command.data.name, command);
+}
+
+// Add this event handler to handle slash commands
+client.on('interactionCreate', async interaction => {
+	if (!interaction.isChatInputCommand()) return;
+	const command = commandsCollection.get(interaction.commandName);
+	if (!command) return;
+	try {
+		await command.execute(interaction);
+	} catch (error) {
+		console.error(`Error executing command ${interaction.commandName}:`, error);
+		if (interaction.replied || interaction.deferred) {
+			await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
+		} else {
+			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+		}
+	}
+});
+
+
+// Ensure the bot logs in and handle login errors
+client.login(process.env.DISCORD_TOKEN).catch((error) => {
+    console.error('Failed to log in:', error);
+    process.exit(1); // Exit the process if login fails
+});

@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, PermissionsBitField, MessageFlags } = require('discord.js');
 const config = require('../config.json');
+const sqlite3 = require('sqlite3').verbose();
 
 //command setup
 module.exports = {
@@ -19,10 +20,14 @@ module.exports = {
         .setMinValue(1)
     ),
   // command execution
-    async execute(interaction, userdb) {
+    async execute(interaction) {
 		// Get the user and amount from the interaction options
         const user = interaction.options.getUser('user');
         const amount = interaction.options.getInteger('amount');
+
+		// import the database
+        const userdb = new sqlite3.Database('./users.db');
+		
 		// Check if the user exists in the database
 		userdb.get('SELECT balance FROM users WHERE id = ?', [user.id], async (err, row) => {
 			if (err) {
@@ -42,7 +47,7 @@ module.exports = {
 					const logChannel = interaction.guild.channels.cache.get(config.log_channel_id);
 					if (logChannel) {
 					const logEmbed = new EmbedBuilder()
-						.setColor(0x008080)
+						.setColor(config.embed_color)
 						.setTitle('Balance Added')
 						.setDescription(`Added ${amount} balance to ${user.username} By ${interaction.user.tag}.`)
 						.setThumbnail(user.displayAvatarURL())
@@ -68,7 +73,7 @@ module.exports = {
 					const logChannel = interaction.guild.channels.cache.get(config.log_channel_id);
 					if (logChannel) {
 					const logEmbed = new EmbedBuilder()
-						.setColor(0x008080)
+						.setColor(config.embed_color)
 						.setTitle('Balance Added')
 						.setDescription(`Added ${amount} balance to ${user.username} By ${interaction.user.tag}.`)
 						.setThumbnail(user.displayAvatarURL())
