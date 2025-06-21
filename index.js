@@ -85,7 +85,7 @@ const itemsdb = new sqlite3.Database('./items.db', (err) => {
 		console.log('Connected to SQLite items database');
 		// Create items table if it doesn't exist
 		itemsdb.run(`CREATE TABLE IF NOT EXISTS items (
-			id TEXT PRIMARY KEY,
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			name TEXT NOT NULL,
 			description TEXT,
 			price INTEGER DEFAULT 0,
