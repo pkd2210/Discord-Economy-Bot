@@ -64,7 +64,7 @@ module.exports = {
 					const logEmbed = new EmbedBuilder()
 						.setColor(config.embed_color)
 						.setTitle('Item Edited')
-						.setDescription(`Item ${id} was edited from ${name}, ${description}, ${price}, ${stock} to ${updatedName}, ${updatedDescription}, ${updatedPrice}, ${updatedStock}.`)
+						.setDescription(`Item ${id} was edited from ${row.name}, ${row.description}, ${row.price}, ${row.stock} to ${updatedName}, ${updatedDescription}, ${updatedPrice}, ${updatedStock}.`)
 						.setTimestamp();
 					logChannel.send({ embeds: [logEmbed] }).catch(console.error);
 				}
