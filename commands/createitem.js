@@ -25,8 +25,13 @@ module.exports = {
 	)
 	.addIntegerOption(option =>
 		option.setName('stock')
-		.setDescription('The stock of the item')
-		.setRequired(true)
+		.setDescription('The stock of the item (will be set to 0 if code stock is used')
+		.setRequired(false)
+	)
+	.addBooleanOption(option =>
+		option.setName('stockcode')
+		.setDescription('Check if the item uses stock code instead of stock')
+		.setRequired(false)
 	),
 	// command execution
 	async execute(interaction) {
@@ -34,16 +39,32 @@ module.exports = {
 		const name = interaction.options.getString('name');
 		const description = interaction.options.getString('description');
 		const price = interaction.options.getInteger('price');
-		const stock = interaction.options.getInteger('stock');
+		const stock = interaction.options.getInteger('stock') ?? 0;
+		const stockcode = interaction.options.getBoolean('stockcode') ?? false;
+
+		let finalStock = stock;
+		if (stockcode === true) {
+			finalStock = 0;
+		}
 
 		itemsdb.run(
 			'INSERT INTO items (name, description, price, stock) VALUES (?, ?, ?, ?)',
-			[name, description, price, stock],
-			async (err) => {
+			[name, description, price, finalStock],
+			async function (err) {
 				if (err) {
 					console.error(err);
 					return interaction.reply({ content: 'There was an error adding the item to the database.', flags: MessageFlags.Ephemeral });
 				}
+
+				if (stockcode) {
+					const itemId = this.lastID;
+					const tableName = `${itemId}_codes`;
+					itemsdb.run(`CREATE TABLE IF NOT EXISTS "${tableName}" (
+						id INTEGER PRIMARY KEY AUTOINCREMENT,
+						code TEXT NOT NULL
+					)`);
+				}
+
 				const logChannel = interaction.guild.channels.cache.get(config.log_channel_id);
 				if (logChannel) {
 					const logEmbed = new EmbedBuilder()
