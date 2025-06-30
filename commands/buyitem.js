@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionsBitField, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const config = require('../config.json');
 const sqlite3 = require('sqlite3').verbose();
 
@@ -7,7 +7,6 @@ module.exports = {
   data: new SlashCommandBuilder()
 	.setName('buyitem')
 	.setDescription('Purchase an item from the shop.')
-	.setDefaultMemberPermissions(PermissionsBitField.Flags.ManageGuild)
 	.addIntegerOption(option =>
 		option.setName('id')
 		.setDescription('The id of the item to purchase')
