@@ -1,14 +1,21 @@
 {
   "name": "discord-economy-bot",
-  "version": "1.0.0",
-  "description": "��#\u0000 \u0000D\u0000i\u0000s\u0000c\u0000o\u0000r\u0000d\u0000-\u0000E\u0000c\u0000o\u0000n\u0000o\u0000m\u0000y\u0000-\u0000B\u0000o\u0000t\u0000\r\u0000 \u0000",
+  "version": "1.0.1",
+  "description": "A feature-rich Discord Economy Bot with SQLite, giveaways, and item shop.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+    "start": "node index.js"
+},
+  "keywords": [
+    "discord",
+    "bot",
+    "economy",
+    "sqlite",
+    "giveaway",
+    "shop"
+  ],
+  "author": "pkd2210 <https://github.com/pkd2210>",
+  "license": "Apache-2.0",
   "dependencies": {
     "@discordjs/rest": "^2.5.1",
     "discord-api-types": "^0.38.12",
