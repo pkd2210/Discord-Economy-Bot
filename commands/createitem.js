@@ -48,8 +48,8 @@ module.exports = {
 		}
 
 		itemsdb.run(
-			'INSERT INTO items (name, description, price, stock) VALUES (?, ?, ?, ?)',
-			[name, description, price, finalStock],
+			'INSERT INTO items (name, description, price, stock, stock_code) VALUES (?, ?, ?, ?, ?)',
+			[name, description, price, finalStock, stockcode ? 1 : 0],
 			async function (err) {
 				if (err) {
 					console.error(err);

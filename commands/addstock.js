@@ -5,7 +5,7 @@ const sqlite3 = require('sqlite3').verbose();
 //command setup
 module.exports = {
   data: new SlashCommandBuilder()
-	.setName('adstock')
+	.setName('addstock')
 	.setDescription('Add a new code to the stock of a item.')
 	.setDefaultMemberPermissions(PermissionsBitField.Flags.ManageGuild)
 	.addIntegerOption(option =>

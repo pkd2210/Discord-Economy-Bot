@@ -6,5 +6,7 @@
     "messages_cooldown_secends": 5,
     "leaderboard_limit": 10,
     "daily_payout": 50,
-    "embed_color": "#FFFFFF"
+    "embed_color": "#FFFFFF",
+	"reward_room": "1389194881791954989",
+	"reward_giver_id": "1384795509335785494"
 }

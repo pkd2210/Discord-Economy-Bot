@@ -17,7 +17,7 @@ module.exports = {
 			const embed = new EmbedBuilder()
 				.setColor(config.embed_color)
 				.setTitle(`Items Shop`)
-				.setDescription('ID: Name - description - price (stock)')
+				.setDescription('ID: Name - description - price')
 
 			const rows = await new Promise((resolve, reject) => {
 				itemsdb.all('SELECT * FROM items ORDER BY price ASC', [], (err, rows) => {
@@ -33,7 +33,7 @@ module.exports = {
 			rows.forEach((row) => {
 				embed.addFields({
 					name: `${row.id}: ${row.name}`,
-					value: `- ${row.description} - **${row.price}** (${row.stock})`,
+					value: `- ${row.description} - **${row.price}**`,
 					inline: false
 				});
 			});
