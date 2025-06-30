@@ -174,6 +174,125 @@ client.on('messageCreate', message => {
     });
 });
 
+// Giveaway system
+// Giveaway button handler
+client.on('interactionCreate', async btnInteraction => {
+    if (!btnInteraction.isButton()) return;
+    const customId = btnInteraction.customId;
+    if (!customId.startsWith('enter_giveaway_')) return;
+    const giveawayId = customId.split('_')[2];
+    const userId = btnInteraction.user.id;
+    const giveawaysdb = new sqlite3.Database('./giveaways.db');
+    giveawaysdb.get('SELECT * FROM giveaways WHERE id = ?', [giveawayId], (err, giveaway) => {
+        if (err || !giveaway) {
+            return btnInteraction.reply({ content: 'Giveaway not found or error occurred.', flags: MessageFlags.Ephemeral });
+        }
+        const channelId = giveaway.channel_id;
+        const price = giveaway.price;
+        // Check if user already entered
+        giveawaysdb.get(`SELECT * FROM "${channelId}_giveaways" WHERE user_id = ?`, [userId], (err, row) => {
+            if (row && row.entered) {
+                return btnInteraction.reply({ content: 'You have already entered this giveaway!', flags: MessageFlags.Ephemeral });
+            }
+            // remove the points from the user
+            const userdb = new sqlite3.Database('./users.db');
+            userdb.get('SELECT balance FROM users WHERE id = ?', [userId], (err, userRow) => {
+                if (!userRow || userRow.balance < price) {
+                    return btnInteraction.reply({ content: 'You do not have enough points to enter this giveaway.', flags: MessageFlags.Ephemeral });
+                }
+                userdb.run('UPDATE users SET balance = balance - ? WHERE id = ?', [price, userId], (err) => {
+                    if (err) {
+                        return btnInteraction.reply({ content: 'Error deducting points.', flags: MessageFlags.Ephemeral });
+                    }
+                    giveawaysdb.run(`INSERT OR IGNORE INTO "${channelId}_giveaways" (user_id, entered) VALUES (?, 1)`, [userId], (err) => {
+                        if (err) {
+                            return btnInteraction.reply({ content: 'Error entering giveaway.', flags: MessageFlags.Ephemeral });
+                        }
+                        btnInteraction.reply({ content: 'You have entered the giveaway!', flags: MessageFlags.Ephemeral });
+                    });
+                });
+            });
+        });
+    });
+});
+
+// When giveaway ends, select a random winner
+client.on('ready', () => {
+	// Set an interval to check for ended giveaways every minute
+	setInterval(() => {	
+		const now = Date.now();
+		const giveawaysdb = new sqlite3.Database('./giveaways.db');
+		giveawaysdb.all('SELECT * FROM giveaways WHERE end_time <= ?', [now], (err, giveaways) => {
+			if (err) {	
+				console.error('Error fetching ended giveaways:', err);
+				return;
+			}
+			giveaways.forEach(giveaway => {
+				const channelId = giveaway.channel_id;
+				const prize = giveaway.prize;
+				const winnersCount = giveaway.winners;
+				const channel = client.channels.cache.get(channelId);
+				if (!channel) {
+					console.error(`Channel with ID ${channelId} not found for giveaway ${giveaway.id}`);
+					return;
+				}
+				giveawaysdb.all(`SELECT user_id FROM "${channelId}_giveaways" WHERE entered = 1`, [], (err, entries) => {
+					if (err) {
+						console.error('Error fetching giveaway entries:', err);
+						return;
+					}
+					if (entries.length === 0) {
+						channel.send(`Giveaway for **${giveaway.name}** ended with no entries.`);
+						giveawaysdb.run('DELETE FROM giveaways WHERE id = ?', [giveaway.id]);
+						giveawaysdb.run(`DROP TABLE IF EXISTS "${channelId}_giveaways"`, [], (err) => {
+							if (err) {
+								console.error('Error dropping giveaway entries table:', err);
+							} else {
+								console.log(`Dropped giveaway entries table for channel ${channelId}`);
+							}
+						});
+						return;
+					}
+					// When giveaway end system
+					const winners = [];
+					const shuffledEntries = entries.sort(() => 0.5 - Math.random());
+					for (let i = 0; i < winnersCount && i < shuffledEntries.length; i++) {
+						winners.push(shuffledEntries[i].user_id);
+					}
+					const winnerMentions = winners.map(id => `<@${id}>`).join(', ');
+					channel.send(`Giveaway for **${giveaway.name}** has ended! Winners: ${winnerMentions} 🎉\nPrize: **${prize}** points.`)
+					// Change the winners's balance
+					const userdb = new sqlite3.Database('./users.db');
+					winners.forEach(winnerId => {
+						userdb.run('UPDATE users SET balance = balance + ? WHERE id = ?', [prize, winnerId], (err) => {
+							if (err) {
+								console.error(`Error updating balance for winner ${winnerId}:`, err);
+							} else {
+								console.log(`Updated balance for winner ${winnerId}`);
+							}
+						});
+					});
+					giveawaysdb.run('DELETE FROM giveaways WHERE id = ?', [giveaway.id], (err) => {
+						if (err) {
+							console.error('Error deleting giveaway:', err);
+						} else {
+							console.log(`Deleted giveaway ${giveaway.id}`);
+						}
+					});
+					giveawaysdb.run(`DROP TABLE IF EXISTS "${channelId}_giveaways"`, [], (err) => {
+						if (err) {
+							console.error('Error dropping giveaway entries table:', err);
+						}
+						else {
+							console.log(`Dropped giveaway entries table for channel ${channelId}`);
+						}
+					});
+				});
+			});
+		});
+	}, 60000);
+});
+
 // Add a collection to store commands
 const commandsCollection = new Map();
 for (const file of commandFiles) {
@@ -191,9 +310,9 @@ client.on('interactionCreate', async interaction => {
 	} catch (error) {
 		console.error(`Error executing command ${interaction.commandName}:`, error);
 		if (interaction.replied || interaction.deferred) {
-			await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
+			await interaction.followUp({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
 		} else {
-			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+			await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
 		}
 	}
 });
