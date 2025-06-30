@@ -247,8 +247,6 @@ client.on('ready', () => {
 						giveawaysdb.run(`DROP TABLE IF EXISTS "${channelId}_giveaways"`, [], (err) => {
 							if (err) {
 								console.error('Error dropping giveaway entries table:', err);
-							} else {
-								console.log(`Dropped giveaway entries table for channel ${channelId}`);
 							}
 						});
 						return;
@@ -267,24 +265,17 @@ client.on('ready', () => {
 						userdb.run('UPDATE users SET balance = balance + ? WHERE id = ?', [prize, winnerId], (err) => {
 							if (err) {
 								console.error(`Error updating balance for winner ${winnerId}:`, err);
-							} else {
-								console.log(`Updated balance for winner ${winnerId}`);
 							}
 						});
 					});
 					giveawaysdb.run('DELETE FROM giveaways WHERE id = ?', [giveaway.id], (err) => {
 						if (err) {
 							console.error('Error deleting giveaway:', err);
-						} else {
-							console.log(`Deleted giveaway ${giveaway.id}`);
 						}
 					});
 					giveawaysdb.run(`DROP TABLE IF EXISTS "${channelId}_giveaways"`, [], (err) => {
 						if (err) {
 							console.error('Error dropping giveaway entries table:', err);
-						}
-						else {
-							console.log(`Dropped giveaway entries table for channel ${channelId}`);
 						}
 					});
 				});

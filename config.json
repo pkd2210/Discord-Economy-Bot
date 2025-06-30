@@ -1,11 +1,11 @@
 {
-    "default_balance": 0,
-    "log_channel_id": "1384796232555298848",
-    "balance_per_message": 1,
+    "default_balance": "0",
+    "log_channel_id": "1389251443885867199",
+    "balance_per_message": "5",
     "messages_cooldown_secends": 5,
-    "leaderboard_limit": 10,
-    "daily_payout": 50,
+    "leaderboard_limit": "10",
+    "daily_payout": "50",
     "embed_color": "#FFFFFF",
-	"reward_room": "1389194881791954989",
-	"reward_giver_id": "1384795509335785494"
+    "reward_room": "1389251945797124177",
+    "reward_giver_id": "1384795509335785494"
 }
