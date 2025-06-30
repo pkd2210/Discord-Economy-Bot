@@ -110,7 +110,7 @@ client.once('ready', () => {
 // On user join server, add them to the database
 client.on('guildMemberAdd', member => {
 	userdb.run(
-		`INSERT OR IGNORE INTO users (id, balance) VALUES (?, ?)`,[member.id, config.defaultBalance],
+		`INSERT OR IGNORE INTO users (id, balance) VALUES (?, ?)`,[member.id, config.defaul_balance],
 		(err) => {
 			if (err) {
 				console.error('Error adding user to database', err);
@@ -124,7 +124,7 @@ client.on('guildCreate', guild => {
 	guild.members.fetch().then(members => {
 		members.forEach(member => {
 			userdb.run(
-				`INSERT OR IGNORE INTO users (id, balance) VALUES (?, ?)`, [member.id, config.defaultBalance],
+				`INSERT OR IGNORE INTO users (id, balance) VALUES (?, ?)`, [member.id, config.default_balance],
 				(err) => {
 					if (err) {
 						console.error('Error adding user to database', err);
